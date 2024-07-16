@@ -34,14 +34,12 @@ class TestTestting():
         self.driver.quit()
     
     def test_testting(self):
-        self.driver.get("http://localhost:5001/")
+        self.driver.get("http://18.141.184.244:5001/")
         self.driver.find_element(By.CSS_SELECTOR, "span").click()
-        self.driver.find_element(By.ID, "fullName").click()
-        self.driver.find_element(By.ID, "fullName").send_keys("Budi")
-        self.driver.find_element(By.ID, "email").click()
-        self.driver.find_element(By.ID, "email").send_keys("budi@yahoo.com")
-        self.driver.find_element(By.ID, "password").click()
-        self.driver.find_element(By.ID, "password").send_keys("1111")
+        self.driver.find_element(By.ID, "Email").click()
+        self.driver.find_element(By.ID, "Email").send_keys("budi@yahoo.com")
+        self.driver.find_element(By.ID, "Password").click()
+        self.driver.find_element(By.ID, "Password").send_keys("1111")
         self.driver.find_element(By.XPATH, "//button[@type=\'submit\']").click()
 
 # Menjalankan pytest jika dijalankan secara langsung
