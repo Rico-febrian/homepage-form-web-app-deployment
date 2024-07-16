@@ -17,11 +17,11 @@ def get_title_from_web(url):
         return f"An error occurred: {e}"
 
 def test_get_title_success():
-    web_url = "http://18.141.184.244:5001"
+    web_url = "http://localhost:5001"
     title = get_title_from_web(web_url)
     assert title == "rcofwork | Homepage"
 
 def test_get_title_failure():
-    web_url = "http://18.141.184.244:5001/not_exist"
+    web_url = "http://localhost:5001/not_exist"
     title = get_title_from_web(web_url)
     assert title == "No title found"
