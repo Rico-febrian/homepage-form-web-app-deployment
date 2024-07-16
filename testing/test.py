@@ -22,6 +22,6 @@ def test_get_title_success():
     assert title == "rcofwork | Homepage"
 
 def test_get_title_failure():
-    web_url = "http://localhost:5002/not_exist"
+    web_url = "http://localhost:5001/not_exist"
     title = get_title_from_web(web_url)
     assert title == "No title found"
