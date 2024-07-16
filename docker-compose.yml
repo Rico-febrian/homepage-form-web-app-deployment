@@ -1,6 +1,8 @@
 version: "3.8"
 
 services:
+
+# PRODUCTION SERVICE
   app-prod:
     image: "${APP_IMAGE}:${APP_TAG}"
     restart: always
@@ -11,9 +13,10 @@ services:
     networks:
       - absensi
 
-  app-dev:
+# DEVELOPMENT SERVICE
+  app-stg:
     build:
-      context: ./app
+      context: ./backend
       dockerfile: Dockerfile
     restart: always
     depends_on:
@@ -23,12 +26,13 @@ services:
     env_file:
       - .env
     networks:
-      - absensi
+      - my_network
 
+# DATABASE SERVICE
   database:
     container_name: database
     build:
-      context: ./postgres
+      context: ./database
       dockerfile: Dockerfile
     restart: always
     ports:
@@ -38,10 +42,12 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - absensi
+      - my_network
 
 networks:
-  absensi:
+  my_network:
+    name: my_network
 
 volumes:
   pgdata:
+    name: pgdata
