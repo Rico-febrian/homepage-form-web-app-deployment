@@ -28,11 +28,6 @@ jobs:
       - name: Build and Run Container
         run: |
           sudo docker compose up database app-stg --build --detach
-
-      - name: Hit Endpoint
-        run: |
-          sleep 20
-          curl ${{ vars.STG_TESTING_URL}}
           
       - name: Testing
         run: |
