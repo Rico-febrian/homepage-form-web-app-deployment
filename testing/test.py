@@ -1,27 +1,49 @@
+# Mengimpor modul yang diperlukan
 import pytest
-import requests
-import re
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import chromedriver_autoinstaller
+from pyvirtualdisplay import Display
 
-def get_title_from_web(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
+# Inisialisasi virtual display untuk menjalankan browser tanpa GUI 
+display = Display(visible=0, size=(800, 800))
+display.start()
 
-        title_match = re.search(r'<title>(.*?)</title>', response.text, re.IGNORECASE)
-        if title_match:
-            title = title_match.group(1).strip()
-            return title
-        else:
-            return "No title found"
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred: {e}"
+# Menggunakan chromedriver_autoinstaller untuk menginstal ChromeDriver
+chromedriver_autoinstaller.install()
 
-def test_get_title_success():
-    web_url = "http://localhost:5001"
-    title = get_title_from_web(web_url)
-    assert title == "rcofwork | Homepage"
+# Konfigurasi opsi Chrome
+chrome_options = webdriver.ChromeOptions()
 
-def test_get_title_failure():
-    web_url = "http://localhost:5001/not_exist"
-    title = get_title_from_web(web_url)
-    assert title == "No title found"
+# Daftar opsi yang ingin ditambahkan
+options = [
+    "--window-size=1200,1200",
+    "--ignore-certificate-errors"
+]
+
+# Menambahkan opsi-opsi ke dalam chrome_options
+for option in options:
+    chrome_options.add_argument(option)
+
+class TestTestting():
+    def setup_method(self, method):
+        self.driver = webdriver.Chrome(options=chrome_options)
+        self.vars = {}
+    
+    def teardown_method(self, method):
+        self.driver.quit()
+    
+    def test_testting(self):
+        self.driver.get("http://localhost:5001/")
+        self.driver.find_element(By.CSS_SELECTOR, "span").click()
+        self.driver.find_element(By.ID, "fullName").click()
+        self.driver.find_element(By.ID, "fullName").send_keys("Budi")
+        self.driver.find_element(By.ID, "email").click()
+        self.driver.find_element(By.ID, "email").send_keys("budi@yahoo.com")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("1111")
+        self.driver.find_element(By.XPATH, "//button[@type=\'submit\']").click()
+
+# Menjalankan pytest jika dijalankan secara langsung
+if __name__ == "__main__":
+    pytest.main()
