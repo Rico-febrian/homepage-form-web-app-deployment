@@ -1,0 +1,54 @@
+name: Continues Deployment to Staging Server
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-staging:
+    name: Deploy to staging server
+    environment: Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute deployment command
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          APP_PATH_STAGING: ${{ vars.APP_STG_PATH }}
+          GIT_URL: ${{ secrets.GIT_URL }}
+          POSTGRES_USER: ${{ secrets.DB_USER_STG }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_STG }}
+          POSTGRES_DB: ${{ secrets.DB_DBNAME_STG }}
+          POSTGRES_HOST: ${{ secrets.DB_HOST_STG }}
+          POSTGRES_PORT: ${{ secrets.DB_PORT_STG }}
+
+        with:
+          host: ${{ secrets.SSH_HOST_STG }}
+          username: ${{ secrets.SSH_USER_NAME_STG }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_STG }}
+          envs: APP_PATH_STAGING, GIT_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT
+          script: |
+
+            if [[ -d "${APP_PATH_STAGING}" ]]; then 
+              cd $APP_PATH_STAGING
+              sudo docker compose down
+              git pull origin main
+            else
+              ssh-keyscan github.com > ~/.ssh/known_hosts
+              git clone $GIT_URL $APP_PATH_STAGING
+              cd $APP_PATH_STAGING
+            fi
+
+            # If there are any envars update
+            echo "POSTGRES_USER=$POSTGRES_USER" > .env
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+            echo "POSTGRES_DB=$POSTGRES_DB" >> .env
+            echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env
+            echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
+
+            # Run app
+            sudo docker compose up database app-stg --build --detach
+      
+      - name: Hit Endpoint
+        run: |
+          sleep 20
+          curl ${{ secrets.STG_URL }}
