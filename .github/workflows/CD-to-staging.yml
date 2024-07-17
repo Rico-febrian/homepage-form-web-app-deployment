@@ -1,4 +1,4 @@
-name: Continues Deployment to Staging Server
+name: Continue Deployment to Staging Server
 
 on:
   push:
@@ -46,7 +46,7 @@ jobs:
             echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
 
             # Run app
-            sudo docker compose up database app-stg --build --detach
+            sudo docker compose up database app-stg-1 app-stg-2 --build --detach
       
       - name: Hit Endpoint
         run: |
