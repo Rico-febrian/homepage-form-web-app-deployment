@@ -15,7 +15,7 @@ def get_title_from_web(url):
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
 
-web_url = "http://localhost:5001"
+web_url = "http://localhost:5004"
 title = get_title_from_web(web_url)
 
 assert title == "rcofwork | Homepage"
