@@ -1,47 +1,22 @@
-# Mengimpor modul yang diperlukan
-import pytest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import chromedriver_autoinstaller
-from pyvirtualdisplay import Display
+import requests
+import re
 
-# Inisialisasi virtual display untuk menjalankan browser tanpa GUI 
-display = Display(visible=0, size=(800, 800))
-display.start()
+def get_title_from_web(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
 
-# Menggunakan chromedriver_autoinstaller untuk menginstal ChromeDriver
-chromedriver_autoinstaller.install()
+        title_match = re.search(r'<title>(.*?)</title>', response.text, re.IGNORECASE)
+        if title_match:
+            title = title_match.group(1).strip()
+            return title
+        else:
+            return "No title found"
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred: {e}"
 
-# Konfigurasi opsi Chrome
-chrome_options = webdriver.ChromeOptions()
+web_url = "http://localhost:5001"
+title = get_title_from_web(web_url)
 
-# Daftar opsi yang ingin ditambahkan
-options = [
-    "--window-size=1200,1200",
-    "--ignore-certificate-errors"
-]
-
-# Menambahkan opsi-opsi ke dalam chrome_options
-for option in options:
-    chrome_options.add_argument(option)
-
-class TestTestting():
-    def setup_method(self, method):
-        self.driver = webdriver.Chrome(options=chrome_options)
-        self.vars = {}
-    
-    def teardown_method(self, method):
-        self.driver.quit()
-    
-    def test_testting(self):
-        self.driver.get("http://18.141.184.244:5001/")
-        self.driver.find_element(By.CSS_SELECTOR, "span").click()
-        self.driver.find_element(By.ID, "Email").click()
-        self.driver.find_element(By.ID, "Email").send_keys("budi@yahoo.com")
-        self.driver.find_element(By.ID, "Password").click()
-        self.driver.find_element(By.ID, "Password").send_keys("1111")
-        self.driver.find_element(By.XPATH, "//button[@type=\'submit\']").click()
-
-# Menjalankan pytest jika dijalankan secara langsung
-if __name__ == "__main__":
-    pytest.main()
+assert title == "rcofwork | HOMEPAGE"
+print("Testing success")
