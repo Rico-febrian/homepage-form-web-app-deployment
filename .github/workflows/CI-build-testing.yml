@@ -21,15 +21,15 @@ jobs:
           echo "POSTGRES_HOST=${{ secrets.DB_HOST_STG }}" >> .env
           echo "POSTGRES_PORT=${{ secrets.DB_PORT_STG }}" >> .env
 
-       - name: Build and Run Container
-         run: |
-            sudo docker compose up database app-stg --build --detach
+      - name: Build and Run Container
+        run: |
+          sudo docker compose up database app-stg --build --detach
   
-       - name: Hit Endpoint
-         run: |
-            sleep 20
-            curl ${{ secrets.STG_URL }}
+      - name: Hit Endpoint
+        run: |
+          sleep 20
+          curl ${{ secrets.STG_URL }}
             
-       - name: Testing
-         run: |
-            python3 testing/test.py
+      - name: Testing
+        run: |
+          python3 testing/test.py
