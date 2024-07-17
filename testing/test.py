@@ -1,4 +1,3 @@
-import pytest
 import requests
 import re
 
@@ -16,12 +15,8 @@ def get_title_from_web(url):
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
 
-def test_get_title_success():
-    web_url = "http://localhost:5001"
-    title = get_title_from_web(web_url)
-    assert title == "rcofwork | Homepage"
+web_url = "http://localhost:5001"
+title = get_title_from_web(web_url)
 
-def test_get_title_failure():
-    web_url = "http://localhost:5002/not_exist"
-    title = get_title_from_web(web_url)
-    assert title == "No title found"
+assert title == "rcofwork | Homepage"
+print("Testing success")

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>rcofwork | Homepage</title>
 </head>
 <body>
@@ -37,13 +37,13 @@
          <!--------------------Sign In Form----------------------------->
 
         <div class="login-container" id="login">
-            <form action="/login" method="POST"></form>
+            <form action="/login" method="POST">
                 <div class="top">
                     <span>Don't have an account? <a href="#" onclick="register()">Sign Up</a></span>
                     <header>Sign In</header>
                 </div>
                 <div class="input-box">
-                    <input type="text" class="input-field" placeholder="Username or Email">
+                    <input type="text" class="input-field" placeholder="Email">
                     <i class="bx bx-user"></i>
                 </div>
                 <div class="input-box">
@@ -67,7 +67,7 @@
         
         <!--------------------Sign Up Form----------------------------->
         <div class="register-container" id="register">
-            <form action="/register" method="POST"></form>
+            <form action="/register" method="POST">
                 <div class="top">
                     <span>Already have an account? <a href="#" onclick="login()">Sign In</a></span>
                     <header>Create your account</header>
