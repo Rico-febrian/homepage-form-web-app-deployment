@@ -18,5 +18,5 @@ def get_title_from_web(url):
 web_url = "http://localhost:5001"
 title = get_title_from_web(web_url)
 
-assert title == "rcofwork | HOMEPAGE"
+assert title == "rcofwork | Homepage"
 print("Testing success")
