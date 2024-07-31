@@ -1,106 +1,209 @@
+# Version of the Docker Compose file format
 version: "3.8"
 
 services:
 
-# PRODUCTION SERVICE
+  # Set up the config for the first service on the PRODUCTION servers
   app-prod-1:
-    image: "${APP_IMAGE}:${APP_TAG}"
+
+    # Choose the image and tags to use
+    # Load my app image from .env file
+    image: "${APP_IMAGE}:${APP_TAG}" 
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5000:5000
+
+    # Set up environment file config
     env_file:
       - .env
+
+    # Set up network mode
     networks:
       - my_network
 
+  # Set up the config for the second service on the PRODUCTION servers
   app-prod-2:
+
+    # Choose the image and tags to use
+    # Load my app image from .env file
     image: "${APP_IMAGE}:${APP_TAG}"
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5001:5000
+
+    # Set up environment file config
     env_file:
       - .env
+    
+    # Set up network mode
     networks:
       - my_network
 
-# STAGING SERVICE
+#----------------------------------------------------------------------------------#
+
+  # Set up the config for the first service on the STAGING servers
   app-stg-1:
+
+    # Build custom image
     build:
-      context: ./app
-      dockerfile: Dockerfile
+      context: ./app # Build context directory for the app-stg service
+      dockerfile: Dockerfile # Dockerfile name to build the app-stg image
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5002:5000
+
+    # Set up environment file config
     env_file:
       - .env
+
+    # Set up network mode
     networks:
       - my_network
 
+  # Set up the config for the second service on the STAGING servers
   app-stg-2:
+
+    # Build custom image
     build:
-      context: ./app
-      dockerfile: Dockerfile
+      context: ./app # Build context directory for the app-stg service
+      dockerfile: Dockerfile  # Dockerfile name to build the app-stg image
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5003:5000
+
+    # Set up environment file config
     env_file:
       - .env
+
+    # Set up network mode
     networks:
       - my_network
 
-# DEVELOPMENT SERVICE
+#----------------------------------------------------------------------------------#
+
+  # Set up the app-dev service config for DEVELOPMENT testing
   app-dev:
+
+    # Build custom image
     build:
-      context: ./app
-      dockerfile: Dockerfile
+      context: ./app # Build context directory for the app-dev service
+      dockerfile: Dockerfile # Dockerfile name to build the app-dev image
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5004:5000
+
+    # Set up environment file config
     env_file:
       - .env
+    
+    # Set up network mode
     networks:
       - my_network
 
-# NGINX
+#----------------------------------------------------------------------------------#
+
+  # Set up the NGINX service config
   nginx:
+
+    # Choose the image and tags to use
+    # In this service I'm using the nginx image with "latest" tag/version
     image: nginx:latest
+    
+    # Set up name of the container
     container_name: nginx
+
+    # Always restart the container if it fails
     restart: unless-stopped
+
+    # Set up the volume
+    # Mount the local directory to the specified path in the container
     volumes:
-      - ./nginx/conf:/etc/nginx/conf.d
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx/conf:/etc/nginx/conf.d 
+      - ./certbot/conf:/etc/letsencrypt 
+      - ./certbot/www:/var/www/certbot 
       - ./certbot/dhparam.pem:/nginx/dhparam.pem
+    
+    # Set up network mode
+    # In this service, I use the host network mode
+    # for isolated communication between this service and the server.
     network_mode: host
 
-# CERTBOT
+#----------------------------------------------------------------------------------#
+
+  # Set up the CERTBOT service config
   certbot:
+
+    # Choose the image and tags to use
+    # In this service I'm using the certbot image with "latest" tag/version
     image: certbot/certbot:latest
+    
+    # Set up name of the container
     container_name: certbot
+
+    # Set up the volume
+    # Mount the local directory to the specified path in the container
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/conf:/etc/letsencrypt 
       - ./certbot/www:/var/www/certbot
 
-# DATABASE SERVICE
+#----------------------------------------------------------------------------------#
+
+  # Set up the DATABASE service config
   database:
+
+    # Set up name of the container
     container_name: database
+
+    # Build custom image
     build:
-      context: ./database
-      dockerfile: Dockerfile
+      context: ./database # Build context directory for the database service
+      dockerfile: Dockerfile # Dockerfile name to build the database image
+
+    # Always restart the container if it fails
     restart: always
+
+    # Mapping ports from the host to ports in the container
     ports:
       - 5432:5432
+
+    # Set up environment file config
     env_file:
       - .env
+    
+    # Set up the volume
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+    # Set up network mode
     networks:
       - my_network
 
+# Define selected network mode
 networks:
   my_network:
-    name: my_network
+    name: my_network # In this service I created "my_network" network
 
+# Define selected volume
 volumes:
   pgdata:
-    name: pgdata
+    name: pgdata # In this service I created "pg_data" volume
