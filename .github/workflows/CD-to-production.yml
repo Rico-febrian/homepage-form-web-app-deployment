@@ -1,42 +1,61 @@
+# Define name of the workflow
 name: Continue Deployment to Production Server
 
+
+# Set up workflow trigger
+# This workflow is triggered by specific "release" events
+# It means the workflow will run when a release is either:
+# - Published (a new release is created and published)
+# - Edited (an existing release is edited)
 on:
   release:
     types:
       - published
       - edited
 
+# Set up the workflow job 
 jobs:
   deploy-production:
-    name: Deploy to production server
-    environment: Production
-    runs-on: ubuntu-latest
+    name: Deploy to production server  # define name of the job
+    environment: Production            # Specify the environment for the job (Set up the environment in the repo's settings)
+    runs-on: ubuntu-latest             # Define the runner to execute the job
 
+     # Set up steps when running the job
     steps:
+
+      # Execute deployment commands on the production server using the selected 'uses'
       - name: Execute deployment command
         uses: appleboy/ssh-action@v1.0.3
+
+        # Set up .env file configuration
         env:
-          APP_PATH_PROD: ${{ vars.APP_PROD_PATH }}
-          GIT_URL: ${{ secrets.GIT_URL }}
-          POSTGRES_USER: ${{ secrets.DB_USER_PROD }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}
-          POSTGRES_DB: ${{ secrets.DB_DBNAME_PROD }}
-          POSTGRES_HOST: ${{ secrets.DB_HOST_PROD }}
-          POSTGRES_PORT: ${{ secrets.DB_PORT_PROD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          APP_NAME: ${{ vars.APP_IMAGE }}
-          APP_TAG: ${{ github.event.release.tag_name }}
+          APP_PATH_PROD: ${{ vars.APP_PROD_PATH }}                # Path where the application is deployed
+          GIT_URL: ${{ secrets.GIT_URL }}                         # Git URL for the repository
+          POSTGRES_USER: ${{ secrets.DB_USER_PROD }}              # PostgreSQL username
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}      # PostgreSQL password
+          POSTGRES_DB: ${{ secrets.DB_DBNAME_PROD }}              # PostgreSQL database name
+          POSTGRES_HOST: ${{ secrets.DB_HOST_PROD }}              # PostgreSQL hostname
+          POSTGRES_PORT: ${{ secrets.DB_PORT_PROD }}              # PostgreSQL port
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}   # Dockerhub username
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}         # Dockerhub token
+          APP_NAME: ${{ vars.APP_IMAGE }}                         # Docker image app name
+          APP_TAG: ${{ github.event.release.tag_name }}           # Docker image app tag from the release
 
         with:
-          host: ${{ secrets.SSH_HOST_PROD }}
-          username: ${{ secrets.SSH_USER_NAME_PROD }}
-          key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          host: ${{ secrets.SSH_HOST_PROD }}                      # SSH host for the production server
+          username: ${{ secrets.SSH_USER_NAME_PROD }}             # SSH username for the production server
+          key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}                # SSH private key for the production server
+
+          # List of environment variables to pass
           envs: APP_PATH_PROD, GIT_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT, DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, APP_NAME, APP_TAG
+          
+          # Define the script to run the job in the containers
           script: |
             
+            # Log in to Docker Hub
             sudo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_TOKEN
 
+            # Check if the application directory exists and clone the repository if the directory doesn't exist
             if [[ -d "${APP_PATH_PROD}" ]]; then 
               cd $APP_PATH_PROD
               sudo docker compose down
@@ -47,7 +66,7 @@ jobs:
               cd $APP_PATH_PROD
             fi
 
-            # If there are any envars update
+            # Update the .env file with environment variables
             echo "POSTGRES_USER=$POSTGRES_USER" > .env
             echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
             echo "POSTGRES_DB=$POSTGRES_DB" >> .env
@@ -56,9 +75,10 @@ jobs:
             echo "APP_IMAGE=${APP_NAME}" >> .env
             echo "APP_TAG=$APP_TAG" >> .env
 
-            # Run app
+            # Build and run the app for PRODUCTION server
             sudo docker compose up app-prod-1 app-prod-2 --build --detach
 
+      # Verify the deployment by hitting the application endpoint
       - name: Hit Endpoint
         run: |
           sleep 20

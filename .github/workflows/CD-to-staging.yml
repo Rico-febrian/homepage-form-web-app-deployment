@@ -1,33 +1,49 @@
+# Define name of the workflow
 name: Continue Deployment to Staging Server
 
+# Set up workflow trigger
+# In this workflow I set the trigger on push/merge to the main branch
+# It means, this workflow will run if there is a push/merge from another branch to the main branch
 on:
   push:
     branches: [ "main" ]
 
+# Set up the workflow job      
 jobs:
   deploy-staging:
-    name: Deploy to staging server
-    environment: Staging
-    runs-on: ubuntu-latest
+    name: Deploy to staging server  # define name of the job
+    environment: Staging            # Specify the environment for the job (Set up the environment in the repo's settings)
+    runs-on: ubuntu-latest          # Define the runner to execute the job
+    
+    # Set up steps when running the job
     steps:
+
+      # Execute deployment commands on the production server using the selected 'uses'
       - name: Execute deployment command
         uses: appleboy/ssh-action@v1.0.3
+
+        # Set up .env file configuration
         env:
-          APP_PATH_STAGING: ${{ vars.APP_STG_PATH }}
-          GIT_URL: ${{ secrets.GIT_URL }}
-          POSTGRES_USER: ${{ secrets.DB_USER_STG }}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_STG }}
-          POSTGRES_DB: ${{ secrets.DB_DBNAME_STG }}
-          POSTGRES_HOST: ${{ secrets.DB_HOST_STG }}
-          POSTGRES_PORT: ${{ secrets.DB_PORT_STG }}
+          APP_PATH_STAGING: ${{ vars.APP_STG_PATH }}          # Path where the application is deployed
+          GIT_URL: ${{ secrets.GIT_URL }}                     # Git URL for the repository
+          POSTGRES_USER: ${{ secrets.DB_USER_STG }}           # PostgreSQL username
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_STG }}   # PostgreSQL password
+          POSTGRES_DB: ${{ secrets.DB_DBNAME_STG }}           # PostgreSQL database name
+          POSTGRES_HOST: ${{ secrets.DB_HOST_STG }}           # PostgreSQL hostname
+          POSTGRES_PORT: ${{ secrets.DB_PORT_STG }}           # PostgreSQL port
 
         with:
-          host: ${{ secrets.SSH_HOST_STG }}
-          username: ${{ secrets.SSH_USER_NAME_STG }}
-          key: ${{ secrets.SSH_PRIVATE_KEY_STG }}
+          host: ${{ secrets.SSH_HOST_STG }}                   # SSH host for the staging server
+          username: ${{ secrets.SSH_USER_NAME_STG }}          # SSH username for the staging server
+          key: ${{ secrets.SSH_PRIVATE_KEY_STG }}             # SSH private key for authentication
+
+          # List of environment variables to pass
           envs: APP_PATH_STAGING, GIT_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT
+          
+          # Define the script to run the job in the containers
           script: |
 
+            # Check if the application directory exists and clone the repository if the directory doesn't exist
             if [[ -d "${APP_PATH_STAGING}" ]]; then 
               cd $APP_PATH_STAGING
               sudo docker compose down
@@ -38,16 +54,17 @@ jobs:
               cd $APP_PATH_STAGING
             fi
 
-            # If there are any envars update
+            # Update the .env file with environment variables
             echo "POSTGRES_USER=$POSTGRES_USER" > .env
             echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
             echo "POSTGRES_DB=$POSTGRES_DB" >> .env
             echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env
             echo "POSTGRES_PORT=$POSTGRES_PORT" >> .env
 
-            # Run app
+            # Build and run the app for STAGING server
             sudo docker compose up database app-stg-1 app-stg-2 --build --detach
       
+      # Verify the deployment by hitting the application endpoint
       - name: Hit Endpoint
         run: |
           sleep 20

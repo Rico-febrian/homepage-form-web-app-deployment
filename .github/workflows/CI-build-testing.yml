@@ -1,18 +1,28 @@
+# Define name of the workflow
 name: CI - Build and Testing Development Service
 
+# Set up workflow trigger
+# In this workflow I set the trigger on pull request to the main branch
+# It means, this workflow will run if there is a pull request to the main branch
 on:
   pull_request:
     branches: [ "main" ]
 
+# Set up the workflow job
 jobs:
   build-testing:
-    name: Build and Testing
-    environment: Development
-    runs-on: ubuntu-latest
+    name: Build and Testing    # define name of the job
+    environment: Development   # Specify the environment for the job (Set up the environment in the repo's settings)
+    runs-on: ubuntu-latest     # Define the runner to execute the job
+
+    # Set up steps when running the job
     steps:
+
+      # Check out the repository code using the selected 'uses'
       - name: Checkout repository
         uses: actions/checkout@v2
       
+      # Create .env file in the container
       - name: Create .env file
         run: |
           echo "POSTGRES_USER=${{ secrets.DB_USER_DEV }}" > .env
@@ -21,15 +31,18 @@ jobs:
           echo "POSTGRES_HOST=${{ secrets.DB_HOST_DEV }}" >> .env
           echo "POSTGRES_PORT=${{ secrets.DB_PORT_DEV }}" >> .env
 
+      # Build and start containers in the background
       - name: Build and Run Container
         run: |
           sudo docker compose up database app-dev --build --detach
   
+      # Hit the app endpoint to check if the application is accessible
       - name: Hit Endpoint
         run: |
           sleep 20
           curl ${{ vars.DEV_URL }}
             
+      # Run testing file
       - name: Testing
         run: |
           python3 testing/test.py

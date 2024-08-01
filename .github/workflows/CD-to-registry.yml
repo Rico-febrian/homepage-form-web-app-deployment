@@ -1,28 +1,39 @@
+# Define name of the workflow
 name: Continue Delivery to Container Registry (DockerHub)
 
+# Set up workflow trigger
+# This workflow is triggered by Git tag pushes
+# It means the workflow will run whenever a new tag is pushed to the repository
 on:  
   push:
     tags:
       - '*'
 
+# Set up the workflow job  
 jobs:
   build-push:
-    name: Push Image to Container Registry
-    runs-on: ubuntu-latest
+    name: Push Image to Container Registry  # define name of the job
+    runs-on: ubuntu-latest                  # Define the runner to execute the job
 
+    # Set up steps when running the job
     steps:
+
+      # Check out the repository code using the selected 'uses'
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Login to dockerhub and using the selected 'uses'
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }} # Set up dockerhub username secrets/vars
+          password: ${{ secrets.DOCKERHUB_TOKEN }}    # Set up dockerhub token secrets/vars
       
+      # Set up docker buildx for building multi-platform images using the selected 'uses'
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
+      # Build and push docker image to dockerhub using the selected 'uses'
       - name: Push current & latest flaskapp
         uses: docker/build-push-action@v5
         with:
